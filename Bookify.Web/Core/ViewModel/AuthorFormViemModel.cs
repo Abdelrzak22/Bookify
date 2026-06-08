@@ -2,10 +2,9 @@
 
 namespace Bookify.Web.Core.ViewModel
 {
-    //for category
-
-    public class FormViewModel
+    public class AuthorFormViemModel
     {
+
         public int Id { get; set; }
         [MaxLength(100)]
         [Remote("AllowedItems", "Categories", AdditionalFields = "Id",

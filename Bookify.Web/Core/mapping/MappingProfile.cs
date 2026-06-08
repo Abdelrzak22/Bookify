@@ -9,6 +9,10 @@ namespace Bookify.Web.Core.mapping
         {
             CreateMap<Category, CategoriesViewModel>();
             CreateMap<FormViewModel, Category>().ReverseMap();
+
+
+            CreateMap<Author, AuthorViewModel>();
+            CreateMap<AuthorFormViemModel, Author>().ReverseMap();
         }
     }
 }
