@@ -1,68 +1,99 @@
-﻿using Bookify.Web.Core.ViewModel;
+﻿using AutoMapper;
+using Bookify.Web.Core.ViewModel;
 using Bookify.Web.Data;
+using Bookify.Web.filter;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bookify.Web.Controllers
 {
     public class CategoriesController : Controller
     {
         public readonly ApplicationDbContext _context;
+        private readonly IMapper _mapp;
 
-        public CategoriesController(ApplicationDbContext context)
+        public CategoriesController(ApplicationDbContext context,IMapper mapp)
         {
             _context = context;
+            _mapp = mapp;
         }
 
         public IActionResult Index()
         {
             //TO DO: Make ViewModel 
-            var Categories = _context.Categories;
-            return View(Categories);
+            var Categories = _context.Categories.AsNoTracking().ToList();
+            var data=_mapp.Map<IEnumerable<CategoriesViewModel>>(Categories);
+            return View(data);
         }
         [HttpGet]
+        [ajaxonly]
         public IActionResult Create()
         {
-            return View("Form");
+            return PartialView("_Form");
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(CategoryViewModel model)
+        public IActionResult Create(FormViewModel model)
         {
             if (!ModelState.IsValid)
-                return View("Form",model);
+                return BadRequest();
 
-            var category = new Category { Name = model.Name };
+            var category = _mapp.Map<Category>(model);
             _context.Add(category);
             _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
+            var data = _mapp.Map<CategoriesViewModel>(category);
+
+            return PartialView("_row", data); 
         }
         [HttpGet]
+        [ajaxonly]
         public IActionResult Edit(int id)
         {
             var category = _context.Categories.Find(id);
             if (category is null)
                 return NotFound();
-            var viewmodel = new CategoryViewModel
-            {
-                Id = id,
-                Name = category.Name
-            };
-            return View("Form",viewmodel);
+            var viewmodel = _mapp.Map<FormViewModel>(category);
+            
+            return PartialView("_Form",viewmodel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(CategoryViewModel model)
+        public IActionResult Edit(FormViewModel model)
         {
             if (!ModelState.IsValid)
-                return View("Form", model);
+                return BadRequest();
             var category = _context.Categories.Find(model.Id);
-            category.Name = model.Name;
+            category = _mapp.Map(model, category);
             category.LastUpdatedOn = DateTime.Now;
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Index));
+
+            var data = _mapp.Map<CategoriesViewModel>(category);
+            return PartialView("_row", data);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ToggleStatus(int id)
+        {
+            var category = _context.Categories.Find(id);
+            if (category is null)
+                return NotFound();
+            category.IsDeleted = !category.IsDeleted;
+            category.LastUpdatedOn = DateTime.Now;
+            _context.SaveChanges();
+            return Ok(category.LastUpdatedOn.ToString());
+        }
+
+        public IActionResult AllowedItems(FormViewModel modal)
+        {
+            var category = _context.Categories.SingleOrDefault(c => c.Name == modal.Name);
+            var isAllowed = category is null || category.Id.Equals(modal.Id);
+
+            return Json(isAllowed);
         }
     }
 }
