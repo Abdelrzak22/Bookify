@@ -10,9 +10,12 @@ namespace Bookify.Web.Core.Models
         public string Title { get; set; } = null!;
         public int AuthorId { get; set; }
         public Author? Author { get; set; }
-        
+
+  
         public string Description { get; set; } = null!;
-        public string ImageUrl { get; set; } = null!;
+        public string? ImageUrl { get; set; } 
+        public string? ImagePublicId { get; set; } 
+        public string? ImageThumbnailUrl { get; set; } 
 
         [MaxLength(200)]
 

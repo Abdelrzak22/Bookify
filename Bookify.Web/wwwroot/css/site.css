@@ -16,3 +16,21 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+
+.form-floating > .form-select {
+   
+    padding-bottom: .30rem;
+}
+
+
+
+
+
+.field-validation-error {
+    display: block !important;
+}
+
+.invalid-feedback {
+    display: block !important;
+}

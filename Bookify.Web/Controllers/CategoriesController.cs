@@ -38,14 +38,14 @@ namespace Bookify.Web.Controllers
         public IActionResult Create(FormViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return PartialView("_Form", model);
 
             var category = _mapp.Map<Category>(model);
             _context.Add(category);
             _context.SaveChanges();
-            var data = _mapp.Map<CategoriesViewModel>(category);
 
-            return PartialView("_row", data); 
+            return PartialView("_row",
+                _mapp.Map<CategoriesViewModel>(category));
         }
         [HttpGet]
         [ajaxonly]
@@ -64,15 +64,17 @@ namespace Bookify.Web.Controllers
         public IActionResult Edit(FormViewModel model)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return PartialView("_Form", model);
+
             var category = _context.Categories.Find(model.Id);
+
             category = _mapp.Map(model, category);
             category.LastUpdatedOn = DateTime.Now;
+
             _context.SaveChanges();
 
-
-            var data = _mapp.Map<CategoriesViewModel>(category);
-            return PartialView("_row", data);
+            return PartialView("_row",
+                _mapp.Map<CategoriesViewModel>(category));
         }
 
         [HttpPost]
